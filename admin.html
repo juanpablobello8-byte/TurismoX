@@ -3,30 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - CostaFinder</title>
+    <title>Acceso Restringido - CostaFinder</title>
     <!-- Use Outfit font -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
-        body { background: #0f172a; color: white; }
-        .admin-nav { padding: 1rem 2rem; background: rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        body { background: #0f172a; color: white; min-height: 100vh; display: flex; flex-direction: column; }
+        .admin-nav { padding: 1rem 2rem; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .glass-dark {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
         }
+        .login-box {
+            max-width: 400px; margin: auto; padding: 2rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--primary);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #admin-dashboard { display: none; } /* Hidden by default */
+        input.admin-input {
+            width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: white; margin-bottom: 1rem; outline: none;
+        }
+        input.admin-input:focus { border-color: var(--primary); }
     </style>
 </head>
 <body>
     <div class="admin-nav">
-        <h2 style="color:white; margin:0;">CostaFinder <span class="text-accent">Admin Center</span></h2>
-        <a href="index.html" class="btn-outline" style="color: white; border-color: white; text-decoration: none;">Volver al Sitio</a>
+        <h2 style="color:white; margin:0;">CostaFinder <span class="text-accent">Security</span></h2>
+        <div>
+            <button id="logout-btn" class="btn-outline" style="color: #ef4444; border-color: #ef4444; display: none; margin-right: 1rem;" onclick="logout()">Cerrar Sesión</button>
+            <a href="index.html" class="btn-outline" style="color: white; border-color: white; text-decoration: none;">Volver al Inicio</a>
+        </div>
     </div>
 
-    <!-- ADMIN SECTION -->
-    <main class="container">
-        <section id="admin" class="section active" style="opacity:1; transform:none;">
+    <!-- ADMIN LOGIN -->
+    <div id="admin-login" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+        <div class="login-box text-center">
+            <h2 class="mb-2 text-primary">Zona Restringida</h2>
+            <p class="text-muted mb-6">Ingresa la clave de administrador para acceder a los controles. Todo acceso no autorizado será registrado.</p>
+            <input type="password" id="admin-pwd" class="admin-input" placeholder="Contraseña de Administrador">
+            <p id="error-msg" style="color: #ef4444; font-size: 0.9rem; display: none; margin-bottom: 1rem;">Contraseña incorrecta.</p>
+            <button class="btn-primary w-full" onclick="attemptLogin()">Desbloquear Panel</button>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD (Protected) -->
+    <main id="admin-dashboard" class="container">
+        <section class="section active" style="opacity:1; transform:none;">
             <p class="text-muted mb-6" style="color:#cbd5e1;">Gestiona usuarios y modera comentarios para mantener una comunidad segura.</p>
             
             <div style="display: grid; gap: 2rem;">
@@ -69,8 +96,13 @@
         </section>
     </main>
 
-    <!-- Admin Logic -->
+    <!-- Admin Logic & Security -->
     <script>
+        // Simulamos un hash muy simple btoa() para no tener la contraseña en texto plano evidente a simple vista
+        // La contraseña real es: "CostaAdmin2026"
+        const VALID_HASH = "Q29zdGFBZG1pbjIwMjY="; 
+
+        // Base de datos simulada
         const state = {
             users: [
                 { id: 1, name: "Juan Pablo", email: "juan@ejemplo.com" },
@@ -78,13 +110,53 @@
             ],
             comments: [
                 { id: 1, placeId: 1, user: "Turista Alegre", text: "Excelente atención.", reported: false },
-                { id: 2, placeId: 2, user: "BotSpam", text: "Visita mi sitio web!!", reported: true },
-                { id: 3, placeId: 3, user: "Usuario123", text: "El servicio fue malo.", reported: true }
+                { id: 2, placeId: 2, user: "BotSpam", text: "Visita mi sitio web y gana dinero rapido!!", reported: true },
+                { id: 3, placeId: 3, user: "Usuario123", text: "El servicio fue muy malo el martes.", reported: true }
             ]
         };
 
+        // Comprobación de Sesión al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('admin_auth') === VALID_HASH) {
+                unlockDashboard();
+            }
+            // Add Enter key support
+            document.getElementById('admin-pwd').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') attemptLogin();
+            });
+        });
+
+        // Intentar loguearse
+        function attemptLogin() {
+            const pwd = document.getElementById('admin-pwd').value;
+            const hashed = btoa(pwd); // Codificación básica base64
+            
+            if (hashed === VALID_HASH) {
+                sessionStorage.setItem('admin_auth', hashed);
+                document.getElementById('error-msg').style.display = 'none';
+                unlockDashboard();
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('admin-pwd').value = '';
+            }
+        }
+
+        // Desbloquear UI
+        function unlockDashboard() {
+            document.getElementById('admin-login').style.display = 'none';
+            document.getElementById('admin-dashboard').style.display = 'block';
+            document.getElementById('logout-btn').style.display = 'inline-block';
+            renderAdmin(); // Cargar base de datos sólo si está autenticado
+        }
+
+        // Cerrar sesión
+        function logout() {
+            sessionStorage.removeItem('admin_auth');
+            location.reload(); // Recargar página para restaurar todo
+        }
+
+        // Funciones del Dashboard
         function renderAdmin() {
-            // Render Users
             const usersContainer = document.getElementById('admin-users');
             usersContainer.innerHTML = state.users.map(u => `
                 <tr>
@@ -94,7 +166,6 @@
                 </tr>
             `).join('');
 
-            // Render Reported Comments
             const reportedComments = state.comments.filter(c => c.reported);
             const commentsContainer = document.getElementById('admin-comments');
             commentsContainer.innerHTML = reportedComments.map(c => `
@@ -114,14 +185,14 @@
         }
 
         function deleteUser(id) {
-            if(confirm('¿Seguro que deseas eliminar este usuario?')) {
+            if(confirm('¿Seguro que deseas eliminar este usuario de la base de datos?')) {
                 state.users = state.users.filter(u => u.id !== id);
                 renderAdmin();
             }
         }
 
         function deleteComment(id) {
-            if(confirm('¿Seguro que deseas borrar este comentario?')) {
+            if(confirm('¿Seguro que deseas borrar este comentario por incumplir las reglas?')) {
                 state.comments = state.comments.filter(c => c.id !== id);
                 renderAdmin();
             }
@@ -134,8 +205,6 @@
                 renderAdmin();
             }
         }
-
-        document.addEventListener('DOMContentLoaded', renderAdmin);
     </script>
 </body>
 </html>
