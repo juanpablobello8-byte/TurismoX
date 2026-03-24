@@ -32,6 +32,28 @@ if (!localStorage.getItem('cx_current_user')) localStorage.setItem('cx_current_u
 function getDB(key) { return JSON.parse(localStorage.getItem(key)); }
 function setDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
+// Auto-migrate old cached places (like Hotel Maria del Mar Unsplash pic)
+(function migrateDb() {
+    let places = getDB('cx_places');
+    if (places) {
+        let hotel = places.find(p => p.id === 1);
+        if (hotel && !hotel.gallery) {
+            hotel.image = "Hotel Maria Del Mar/Logo.jpg";
+            hotel.phone = "+52 123 456 7890";
+            hotel.website = "https://www.hotelmariadelmar.com";
+            hotel.gallery = [
+                "Hotel Maria Del Mar/Lobby.jpg", 
+                "Hotel Maria Del Mar/Foto 1.jpg", 
+                "Hotel Maria Del Mar/Foto 2.jpg", 
+                "Hotel Maria Del Mar/Hab King.jpg", 
+                "Hotel Maria Del Mar/Hab Triple.jpg", 
+                "Hotel Maria Del Mar/Campestre.jpg"
+            ];
+            setDB('cx_places', places);
+        }
+    }
+})();
+
 // Current specific state
 const state = {
     currentPlaceId: null
