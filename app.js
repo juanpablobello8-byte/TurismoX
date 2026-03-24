@@ -28,7 +28,7 @@ const DEFAULT_PLACES = [
         rating: 5.0, 
         image: "playa de montepio/Playa 4.jpg", 
         desc: "Un paraíso natural perfecto para disfrutar del oleaje, la arena dorada y diversas actividades recreativas. El entorno ideal para relajarte o aventurarte.",
-        coords: "18.6366,-95.0975",
+        coords: "18.6445842,-95.0974643",
         phone: "",
         website: "",
         gallery: [
@@ -75,6 +75,8 @@ function setDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
         let montepio = places.find(p => p.id === 2);
         if (!montepio) {
             places.push(DEFAULT_PLACES[1]);
+        } else {
+            montepio.coords = "18.6445842,-95.0974643";
         }
         setDB('cx_places', places);
     }
