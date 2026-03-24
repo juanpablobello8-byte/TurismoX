@@ -116,7 +116,7 @@ function openDetail(id) {
         </div>
     `).join('');
 
-    const mapsEmbedUrl = \`https://maps.google.com/maps?q=\${place.coords}&t=&z=16&ie=UTF8&iwloc=&output=embed\`;
+    const mapsEmbedUrl = `https://maps.google.com/maps?q=${place.coords}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
 
     container.innerHTML = `
         <div class="detail-header">
