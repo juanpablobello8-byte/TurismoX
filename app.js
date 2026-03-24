@@ -1,53 +1,28 @@
-// ====== State & Data ======
+// ====== State Management (LocalStorage) ======
+const DEFAULT_PLACES = [
+    { 
+        id: 1, 
+        name: "Hotel Maria del Mar", 
+        type: "hotel", 
+        catName: "Hotel",
+        rating: 5.0, 
+        image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80", 
+        desc: "El mejor destino de descanso para disfrutar de impresionantes puestas de sol, relajación y contacto con la naturaleza. Tu escape perfecto en la playa.",
+        coords: "18.6420777,-95.0989037"
+    }
+];
+
+// Initialize DB if not exists
+if (!localStorage.getItem('cx_places')) localStorage.setItem('cx_places', JSON.stringify(DEFAULT_PLACES));
+if (!localStorage.getItem('cx_users')) localStorage.setItem('cx_users', JSON.stringify([]));
+if (!localStorage.getItem('cx_comments')) localStorage.setItem('cx_comments', JSON.stringify([]));
+if (!localStorage.getItem('cx_current_user')) localStorage.setItem('cx_current_user', JSON.stringify(null));
+
+function getDB(key) { return JSON.parse(localStorage.getItem(key)); }
+function setDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+// Current specific state
 const state = {
-    currentUser: null,
-    places: [
-        { 
-            id: 1, 
-            name: "Hotel Maria del Mar", 
-            type: "hotel", 
-            catName: "Hotel",
-            rating: 4.8, 
-            image: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=600&q=80", 
-            desc: "Un hermoso hotel boutique frente al mar, inspirado en la brisa tropical. Relájate en la piscina, camina por la suave arena y disfruta de los mejores atardeceres de la costa.",
-            coords: "Hotel+María+del+Mar+Tulum" // Used for Google Maps Embed
-        },
-        { 
-            id: 2, 
-            name: "Mariscos El Pescador", 
-            type: "restaurant", 
-            catName: "Restaurante",
-            rating: 4.7, 
-            image: "https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=600&q=80", 
-            desc: "Disfruta de platillos frescos del mar a la mesa. Especialistas en ceviche, camarones al ajillo y pescado frito con vista directa al oleaje caribeño.",
-            coords: "Marisquería+Playa"
-        },
-        { 
-            id: 3, 
-            name: "Buceo Coralino", 
-            type: "attraction", 
-            catName: "Atracción",
-            rating: 4.9, 
-            image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80", 
-            desc: "Sumérgete en las maravillas ocultas bajo el océano. Ofrecemos tours de buceo y snorkel para explorar los arrecifes de coral y la vida marina.",
-            coords: "Buceo+Arrecife"
-        },
-        { 
-            id: 4, 
-            name: "Club de Playa Oasis", 
-            type: "attraction", 
-            catName: "Club de Playa",
-            rating: 4.5, 
-            image: "https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?auto=format&fit=crop&w=600&q=80", 
-            desc: "El club de playa con más vibrante energía. Cabañas privadas, DJs internacionales y cócteles exóticos bajo las palmeras.",
-            coords: "Beach+Club+Costa"
-        }
-    ],
-    comments: [
-        { id: 1, placeId: 1, user: "ViajeroFrecuente", text: "Me hospedé en el Hotel Maria del Mar y la experiencia fue mágica. Recomendadísimo.", reported: false },
-        { id: 2, placeId: 2, user: "AnaCocina", text: "El ceviche es espectacular, aunque había mucha fila para entrar.", reported: false },
-        { id: 3, placeId: 1, user: "TuristaAlegre", text: "La piscina es muy agradable, perfecto para desconectarse.", reported: false }
-    ],
     currentPlaceId: null
 };
 
@@ -57,17 +32,21 @@ function showSection(id) {
     document.getElementById(id).classList.add('active');
     
     // Auth navbar update logic
-    if (state.currentUser && id === 'login') {
-        alert("Ya has iniciado sesión como " + state.currentUser.name);
+    const currentUser = getDB('cx_current_user');
+    if (currentUser && id === 'login') {
+        alert("Ya has iniciado sesión como " + currentUser.name + ". ¡Ve a disfrutar del catálogo!");
         showSection('home');
+    }
+
+    if(id === 'home' || id === 'catalog') {
+        renderCards('featured-grid', getDB('cx_places').slice(0, 3));
+        renderCards('catalog-grid', getDB('cx_places'));
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ====== Render Functions ======
-
-// Generate star string
 function getStarsHTML(rating) {
     let html = '';
     for(let i = 1; i <= 5; i++) {
@@ -76,11 +55,16 @@ function getStarsHTML(rating) {
     return html;
 }
 
-// Render place cards
 function renderCards(containerId, data) {
     const container = document.getElementById(containerId);
+    if(!container) return;
     container.innerHTML = '';
     
+    if(data.length === 0) {
+        container.innerHTML = `<p class="text-muted text-center w-full" style="grid-column: 1/-1;">Aún no hay lugares registrados en esta categoría.</p>`;
+        return;
+    }
+
     data.forEach(item => {
         const div = document.createElement('div');
         div.className = 'glass card';
@@ -101,39 +85,38 @@ function renderCards(containerId, data) {
     });
 }
 
-// ====== Catalog Logic ======
 function filterCatalog(type) {
-    // Update active button
     document.querySelectorAll('.filters .filter-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
 
-    // Filter array
-    const filtered = type === 'all' 
-        ? state.places 
-        : state.places.filter(p => p.type === type);
-    
+    const places = getDB('cx_places');
+    const filtered = type === 'all' ? places : places.filter(p => p.type === type);
     renderCards('catalog-grid', filtered);
 }
 
-// ====== Detail Logic & Google Maps ======
+// ====== Detail Logic ======
 function openDetail(id) {
-    const place = state.places.find(p => p.id === id);
+    const places = getDB('cx_places');
+    const place = places.find(p => p.id === id);
     if(!place) return;
     
     state.currentPlaceId = id;
     const container = document.getElementById('detail-content');
     
-    // Get comments for this place
-    const placeComments = state.comments.filter(c => c.placeId === id);
+    // Get comments
+    const allComments = getDB('cx_comments');
+    const placeComments = allComments.filter(c => c.placeId === id);
     const commentsHTML = placeComments.map(c => `
         <div class="comment-item">
-            <strong class="text-accent">${c.user}</strong>
+            <div style="display:flex; justify-content:space-between;">
+                <strong class="text-accent">🌴 ${c.user}</strong>
+                <button onclick="reportComment(${c.id})" title="Reportar comentario como ofensivo" style="background:transparent; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer;">⚠️ Reportar</button>
+            </div>
             <p class="mt-4" style="color: var(--text-muted);">${c.text}</p>
         </div>
     `).join('');
 
-    // Generate Google Maps URL (static embed without API key via standard query)
-    const mapsEmbedUrl = \`https://maps.google.com/maps?q=\${place.coords}&t=&z=14&ie=UTF8&iwloc=&output=embed\`;
+    const mapsEmbedUrl = \`https://maps.google.com/maps?q=\${place.coords}&t=&z=16&ie=UTF8&iwloc=&output=embed\`;
 
     container.innerHTML = `
         <div class="detail-header">
@@ -147,28 +130,69 @@ function openDetail(id) {
                 <p class="text-muted mb-6" style="font-size: 1.1rem; line-height: 1.8;">${place.desc}</p>
                 
                 <div class="glass p-6" style="background: rgba(255,255,255,0.7); border: 1px solid var(--primary);">
-                    <h3 style="color: var(--primary);">Califica tu experiencia</h3>
-                    <div style="font-size: 2rem; color: #94a3b8; margin: 10px 0; cursor: pointer;">
-                        ★ ★ ★ ★ ★
-                    </div>
-                    <textarea class="w-full" rows="3" placeholder="Comparte tu opinión con otros viajeros..." style="background: white; border: 1px solid rgba(0,0,0,0.1); color: var(--text-main); padding: 10px; border-radius: 8px; margin-bottom: 1rem;"></textarea>
-                    <button class="btn-primary" onclick="alert('Necesitas iniciar sesión para calificar.')">Publicar Reseña</button>
+                    <h3 style="color: var(--primary);">Comparte tu experiencia</h3>
+                    <textarea id="new-comment-text" class="w-full" rows="3" placeholder="Escribe aquí tu reseña sobre ${place.name}..." style="background: white; border: 1px solid rgba(0,0,0,0.1); color: var(--text-main); padding: 10px; border-radius: 8px; margin-top: 10px; margin-bottom: 1rem; font-family:inherit;"></textarea>
+                    <button class="btn-primary" onclick="postComment()">Publicar Reseña</button>
                 </div>
             </div>
         </div>
         
         <div class="map-container">
-            <h3 class="mb-4" style="color: var(--primary);">Ubicación en el Mapa GPS</h3>
+            <h3 class="mb-4" style="color: var(--primary);">Ubicación GPS</h3>
             <iframe width="100%" height="400" src="${mapsEmbedUrl}" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
         </div>
 
         <div class="comments-list">
-            <h3 class="mb-4" style="color: var(--primary);">Comentarios Recientes</h3>
-            ${commentsHTML || '<p class="text-muted">Aún no hay comentarios. ¡Sé el primero en contar tu experiencia en la playa!</p>'}
+            <h3 class="mb-4" style="color: var(--primary);">Todas las Reseñas</h3>
+            ${commentsHTML || '<p class="text-muted">No hay reseñas para mostrar todavía. ¡Sé el primero!</p>'}
         </div>
     `;
     
     showSection('detail');
+}
+
+// ====== Interactivity Logic ======
+function postComment() {
+    const currentUser = getDB('cx_current_user');
+    if(!currentUser) {
+        alert('🏄‍♂️ Por favor, Inicia Sesión en el panel superior antes de publicar.');
+        showSection('login');
+        return;
+    }
+
+    const textInput = document.getElementById('new-comment-text');
+    const text = textInput.value.trim();
+    if(!text) {
+        alert('No escribiste nada en tu comentario.');
+        return;
+    }
+
+    const comments = getDB('cx_comments');
+    const newComment = {
+        id: Date.now(), // Generate unique ID
+        placeId: state.currentPlaceId,
+        user: currentUser.name,
+        text: text,
+        reported: false
+    };
+
+    comments.push(newComment);
+    setDB('cx_comments', comments);
+    
+    // Refresh detail view
+    openDetail(state.currentPlaceId);
+}
+
+function reportComment(commentId) {
+    if(confirm('¿Seguro quieres reportar este comentario como inapropiado? Los administradores lo revisarán.')) {
+        const comments = getDB('cx_comments');
+        const comment = comments.find(c => c.id === commentId);
+        if(comment) {
+            comment.reported = true;
+            setDB('cx_comments', comments);
+            alert('Gracias, el comentario ha sido enviado a revisión.');
+        }
+    }
 }
 
 // ====== Auth Logic ======
@@ -179,29 +203,69 @@ function switchAuth(mode) {
     event.target.classList.add('active');
     
     document.getElementById('name-group').style.display = mode === 'register' ? 'block' : 'none';
-    document.getElementById('auth-submit').textContent = mode === 'register' ? 'Crear Cuenta' : 'Entrar';
+    document.getElementById('auth-submit').textContent = mode === 'register' ? '🌴 Registrarme' : '🌊 Entrar';
 }
 
 function handleAuth(event) {
     event.preventDefault();
-    // Simular Auth
-    const email = event.target.querySelector('input[type="email"]').value;
-    state.currentUser = { name: authMode === 'register' ? event.target.querySelector('input[type="text"]').value : email.split('@')[0], email };
     
-    // Update navbar
-    const btn = document.querySelector('nav .btn-primary');
-    btn.innerHTML = "🌊 " + state.currentUser.name;
-    btn.onclick = () => alert("Perfil de viajero próximamente");
-    btn.style.background = "var(--accent)";
+    const email = event.target.querySelector('input[type="email"]').value.toLowerCase().trim();
+    const pwd = event.target.querySelector('input[type="password"]').value;
+    const users = getDB('cx_users');
     
-    alert(`¡Bienvenido a CostaFinder, ${state.currentUser.name}!`);
+    if (authMode === 'register') {
+        // Register flow
+        const name = event.target.querySelector('input[type="text"]').value.trim();
+        if(users.some(u => u.email === email)) {
+            alert('Ese correo ya está registrado en CostaFinder.');
+            return;
+        }
+        
+        const newUser = { id: Date.now(), name, email, pwd };
+        users.push(newUser);
+        setDB('cx_users', users);
+        setDB('cx_current_user', { name, email, id: newUser.id });
+        alert('¡Bienvenido! Cuenta creada exitosamente.');
+
+    } else {
+        // Login flow
+        const user = users.find(u => u.email === email && u.pwd === pwd);
+        if(!user) {
+            alert('Correo o contraseña incorrecta, revisa tus datos 🏖️');
+            return;
+        }
+        setDB('cx_current_user', { name: user.name, email: user.email, id: user.id });
+    }
+
+    // Limpiar form
+    event.target.reset();
+    updateNavbar();
     showSection('home');
+}
+
+function updateNavbar() {
+    const currentUser = getDB('cx_current_user');
+    const btn = document.querySelector('nav .btn-primary');
+    
+    if(currentUser) {
+        btn.innerHTML = "Desconectar (" + currentUser.name.split(' ')[0] + ")";
+        btn.style.background = "var(--danger)";
+        btn.onclick = () => {
+            if(confirm("¿Quieres cerrar sesión?")) {
+                setDB('cx_current_user', null);
+                updateNavbar();
+                showSection('home');
+            }
+        };
+    } else {
+        btn.innerHTML = "Ingresar";
+        btn.style.background = "var(--primary)";
+        btn.onclick = () => showSection('login');
+    }
 }
 
 // ====== Initialization ======
 document.addEventListener('DOMContentLoaded', () => {
-    // Show top 3 in HOME
-    renderCards('featured-grid', state.places.slice(0, 3));
-    // Show all in CATALOG
-    renderCards('catalog-grid', state.places);
+    updateNavbar();
+    showSection('home');
 });

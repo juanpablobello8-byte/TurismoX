@@ -44,7 +44,7 @@
     <div id="admin-login" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem;">
         <div class="login-box text-center">
             <h2 class="mb-2 text-primary">Zona Restringida</h2>
-            <p class="text-muted mb-6">Ingresa la clave de administrador para acceder a los controles. Todo acceso no autorizado será registrado.</p>
+            <p class="text-muted mb-6">Ingresa la clave de administrador para acceder a los controles.</p>
             <input type="password" id="admin-pwd" class="admin-input" placeholder="Contraseña de Administrador">
             <p id="error-msg" style="color: #ef4444; font-size: 0.9rem; display: none; margin-bottom: 1rem;">Contraseña incorrecta.</p>
             <button class="btn-primary w-full" onclick="attemptLogin()">Desbloquear Panel</button>
@@ -54,11 +54,11 @@
     <!-- ADMIN DASHBOARD (Protected) -->
     <main id="admin-dashboard" class="container">
         <section class="section active" style="opacity:1; transform:none;">
-            <p class="text-muted mb-6" style="color:#cbd5e1;">Gestiona usuarios y modera comentarios para mantener una comunidad segura.</p>
+            <p class="text-muted mb-6" style="color:#cbd5e1;">Gestiona usuarios reales y modera reseñas para mantener una comunidad segura.</p>
             
             <div style="display: grid; gap: 2rem;">
                 <div class="glass-dark p-6">
-                    <h3 class="mb-4" style="color:white;">Usuarios Registrados</h3>
+                    <h3 class="mb-4" style="color:white;">Turistas Registrados</h3>
                     <div style="overflow-x: auto;">
                         <table class="w-full">
                             <thead>
@@ -82,7 +82,7 @@
                             <thead>
                                 <tr>
                                     <th style="color:#94a3b8;">Usuario</th>
-                                    <th style="color:#94a3b8;">Comentario</th>
+                                    <th style="color:#94a3b8;">Comentario Ofensivo</th>
                                     <th style="color:#94a3b8;">Acción</th>
                                 </tr>
                             </thead>
@@ -96,40 +96,24 @@
         </section>
     </main>
 
-    <!-- Admin Logic & Security -->
+    <!-- Admin Logic -->
     <script>
-        // Simulamos un hash muy simple btoa() para no tener la contraseña en texto plano evidente a simple vista
-        // La contraseña real es: "CostaAdmin2026"
         const VALID_HASH = "Q29zdGFBZG1pbjIwMjY="; 
 
-        // Base de datos simulada
-        const state = {
-            users: [
-                { id: 1, name: "Juan Pablo", email: "juan@ejemplo.com" },
-                { id: 2, name: "Turista Alegre", email: "viajero@ejemplo.com" }
-            ],
-            comments: [
-                { id: 1, placeId: 1, user: "Turista Alegre", text: "Excelente atención.", reported: false },
-                { id: 2, placeId: 2, user: "BotSpam", text: "Visita mi sitio web y gana dinero rapido!!", reported: true },
-                { id: 3, placeId: 3, user: "Usuario123", text: "El servicio fue muy malo el martes.", reported: true }
-            ]
-        };
+        // Local Storage Sync Utilities
+        function getDB(key) { return JSON.parse(localStorage.getItem(key)) || []; }
+        function setDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
-        // Comprobación de Sesión al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
-            if (sessionStorage.getItem('admin_auth') === VALID_HASH) {
-                unlockDashboard();
-            }
-            // Add Enter key support
+            if (sessionStorage.getItem('admin_auth') === VALID_HASH) unlockDashboard();
             document.getElementById('admin-pwd').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') attemptLogin();
             });
         });
 
-        // Intentar loguearse
         function attemptLogin() {
             const pwd = document.getElementById('admin-pwd').value;
-            const hashed = btoa(pwd); // Codificación básica base64
+            const hashed = btoa(pwd); 
             
             if (hashed === VALID_HASH) {
                 sessionStorage.setItem('admin_auth', hashed);
@@ -141,67 +125,79 @@
             }
         }
 
-        // Desbloquear UI
         function unlockDashboard() {
             document.getElementById('admin-login').style.display = 'none';
             document.getElementById('admin-dashboard').style.display = 'block';
             document.getElementById('logout-btn').style.display = 'inline-block';
-            renderAdmin(); // Cargar base de datos sólo si está autenticado
+            renderAdmin();
         }
 
-        // Cerrar sesión
         function logout() {
             sessionStorage.removeItem('admin_auth');
-            location.reload(); // Recargar página para restaurar todo
+            location.reload();
         }
 
-        // Funciones del Dashboard
         function renderAdmin() {
+            // Cargar usuarios de localStorage
+            const users = getDB('cx_users');
             const usersContainer = document.getElementById('admin-users');
-            usersContainer.innerHTML = state.users.map(u => `
-                <tr>
-                    <td style="color:white;">${u.name}</td>
-                    <td style="color:white;">${u.email}</td>
-                    <td><button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 0.4rem 1rem;" onclick="deleteUser(${u.id})">Eliminar</button></td>
-                </tr>
-            `).join('');
+            if(users.length === 0) {
+                usersContainer.innerHTML = '<tr><td colspan="3" class="text-muted">Aún no hay turistas registrados.</td></tr>';
+            } else {
+                usersContainer.innerHTML = users.map(u => `
+                    <tr>
+                        <td style="color:white;">${u.name}</td>
+                        <td style="color:white;">${u.email}</td>
+                        <td><button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 0.4rem 1rem;" onclick="deleteUser(${u.id})">Expulsar</button></td>
+                    </tr>
+                `).join('');
+            }
 
-            const reportedComments = state.comments.filter(c => c.reported);
+            // Cargar reseñas reportadas
+            const allComments = getDB('cx_comments');
+            const reportedComments = allComments.filter(c => c.reported);
             const commentsContainer = document.getElementById('admin-comments');
-            commentsContainer.innerHTML = reportedComments.map(c => `
-                <tr>
-                    <td style="color:white;">${c.user}</td>
-                    <td style="color:white;">"${c.text}"</td>
-                    <td>
-                        <button class="btn-outline" style="color: #10b981; border-color: #10b981; padding: 0.4rem 1rem; margin-right: 0.5rem;" onclick="ignoreReport(${c.id})">Ignorar</button>
-                        <button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 0.4rem 1rem;" onclick="deleteComment(${c.id})">Borrar</button>
-                    </td>
-                </tr>
-            `).join('');
             
             if(reportedComments.length === 0) {
-                commentsContainer.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No hay comentarios reportados</td></tr>`;
+                commentsContainer.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Todo tranquilo. No hay comentarios reportados.</td></tr>`;
+            } else {
+                commentsContainer.innerHTML = reportedComments.map(c => `
+                    <tr>
+                        <td style="color:white;">${c.user}</td>
+                        <td style="color:white;">"${c.text}"</td>
+                        <td>
+                            <button class="btn-outline" style="color: #10b981; border-color: #10b981; padding: 0.4rem 1rem; margin-right: 0.5rem;" onclick="ignoreReport(${c.id})">Es seguro</button>
+                            <button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 0.4rem 1rem;" onclick="deleteComment(${c.id})">Borrar</button>
+                        </td>
+                    </tr>
+                `).join('');
             }
         }
 
         function deleteUser(id) {
-            if(confirm('¿Seguro que deseas eliminar este usuario de la base de datos?')) {
-                state.users = state.users.filter(u => u.id !== id);
+            if(confirm('¿Seguro que deseas ELIMINAR A ESTE TURISTA de la base de datos real?')) {
+                let users = getDB('cx_users');
+                users = users.filter(u => u.id !== id);
+                setDB('cx_users', users);
                 renderAdmin();
             }
         }
 
         function deleteComment(id) {
-            if(confirm('¿Seguro que deseas borrar este comentario por incumplir las reglas?')) {
-                state.comments = state.comments.filter(c => c.id !== id);
+            if(confirm('¿Borrar definitivamente este comentario reportado?')) {
+                let comments = getDB('cx_comments');
+                comments = comments.filter(c => c.id !== id);
+                setDB('cx_comments', comments);
                 renderAdmin();
             }
         }
 
         function ignoreReport(id) {
-            const comment = state.comments.find(c => c.id === id);
+            let comments = getDB('cx_comments');
+            const comment = comments.find(c => c.id === id);
             if(comment) {
                 comment.reported = false;
+                setDB('cx_comments', comments);
                 renderAdmin();
             }
         }

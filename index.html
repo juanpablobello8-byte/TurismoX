@@ -67,27 +67,31 @@
         <!-- LOGIN / REGISTER SECTION -->
         <section id="login" class="section fade-in">
             <div class="auth-container">
-                <div class="glass auth-card">
-                    <h2 class="text-center mb-4">Bienvenido a CostaFinder</h2>
+                <div class="auth-card" style="background: rgba(255,255,255,0.95); border: 2px solid var(--primary); border-radius: 24px; box-shadow: 0 15px 40px rgba(2, 132, 199, 0.2);">
+                    <div class="text-center mb-4">
+                        <span style="font-size: 3rem;">🌴</span>
+                        <h2 style="color: var(--primary);">Bienvenido a la Costa</h2>
+                        <p class="text-muted">Crea cuenta o ingresa para guardar tus lugares favoritos y dar reseñas reales.</p>
+                    </div>
                     <div class="tabs mb-4">
-                        <button class="tab-btn active" onclick="switchAuth('login')">Iniciar Sesión</button>
-                        <button class="tab-btn" onclick="switchAuth('register')">Registrarse</button>
+                        <button class="tab-btn active" onclick="switchAuth('login')">🌊 Entrar</button>
+                        <button class="tab-btn" onclick="switchAuth('register')">🌴 Registrarme</button>
                     </div>
                     
                     <form id="auth-form" onsubmit="handleAuth(event)">
                         <div class="input-group" id="name-group" style="display: none;">
-                            <label>Nombre Completo</label>
-                            <input type="text" placeholder="Tu nombre">
+                            <label>¿Cómo te llamas?</label>
+                            <input type="text" placeholder="Tu nombre viajero">
                         </div>
                         <div class="input-group">
-                            <label>Correo Electrónico</label>
+                            <label>Tu Correo Electrónico</label>
                             <input type="email" placeholder="correo@ejemplo.com" required>
                         </div>
                         <div class="input-group">
-                            <label>Contraseña</label>
+                            <label>Tu Contraseña Segura</label>
                             <input type="password" placeholder="••••••••" required>
                         </div>
-                        <button type="submit" class="btn-primary w-full mt-4" id="auth-submit">Entrar</button>
+                        <button type="submit" class="btn-primary w-full mt-4" id="auth-submit" style="font-size: 1.1rem; padding: 1rem;">🌊 Entrar</button>
                     </form>
                 </div>
             </div>
