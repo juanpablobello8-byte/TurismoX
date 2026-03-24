@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - CostaFinder</title>
+    <!-- Use Outfit font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background: #0f172a; color: white; }
+        .admin-nav { padding: 1rem 2rem; background: rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .glass-dark {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-nav">
+        <h2 style="color:white; margin:0;">CostaFinder <span class="text-accent">Admin Center</span></h2>
+        <a href="index.html" class="btn-outline" style="color: white; border-color: white; text-decoration: none;">Volver al Sitio</a>
+    </div>
+
+    <!-- ADMIN SECTION -->
+    <main class="container">
+        <section id="admin" class="section active" style="opacity:1; transform:none;">
+            <p class="text-muted mb-6" style="color:#cbd5e1;">Gestiona usuarios y modera comentarios para mantener una comunidad segura.</p>
+            
+            <div style="display: grid; gap: 2rem;">
+                <div class="glass-dark p-6">
+                    <h3 class="mb-4" style="color:white;">Usuarios Registrados</h3>
+                    <div style="overflow-x: auto;">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th style="color:#94a3b8;">Nombre</th>
+                                    <th style="color:#94a3b8;">Correo</th>
+                                    <th style="color:#94a3b8;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users">
+                                <!-- JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="glass-dark p-6">
+                    <h3 class="mb-4" style="color:white;">Comentarios Reportados</h3>
+                    <div style="overflow-x: auto;">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th style="color:#94a3b8;">Usuario</th>
+                                    <th style="color:#94a3b8;">Comentario</th>
+                                    <th style="color:#94a3b8;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-comments">
+                                <!-- JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Admin Logic -->
+    <script>
+        const state = {
+            users: [
+                { id: 1, name: "Juan Pablo", email: "juan@ejemplo.com" },
+                { id: 2, name: "Turista Alegre", email: "viajero@ejemplo.com" }
+            ],
+            comments: [
+                { id: 1, placeId: 1, user: "Turista Alegre", text: "Excelente atención.", reported: false },
+                { id: 2, placeId: 2, user: "BotSpam", text: "Visita mi sitio web!!", reported: true },
+                { id: 3, placeId: 3, user: "Usuario123", text: "El servicio fue malo.", reported: true }
+            ]
+        };
+
+        function renderAdmin() {
+            // Render Users
+            const usersContainer = document.getElementById('admin-users');
+            usersContainer.innerHTML = state.users.map(u => `
+                <tr>
+                    <td style="color:white;">${u.name}</td>
+                    <td style="color:white;">${u.email}</td>
+                    <td><button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 0.4rem 1rem;" onclick="deleteUser(${u.id})">Eliminar</button></td>
+                </tr>
+            `).join('');
+
+            // Render Reported Comments
+            const reportedComments = state.comments.filter(c => c.reported);
+            const commentsContainer = document.getElementById('admin-comments');
+            commentsContainer.innerHTML = reportedComments.map(c => `
+                <tr>
+                    <td style="color:white;">${c.user}</td>
+                    <td style="color:white;">"${c.text}"</td>
+                    <td>
+                        <button class="btn-outline" style="color: #10b981; border-color: #10b981; padding: 0.4rem 1rem; margin-right: 0.5rem;" onclick="ignoreReport(${c.id})">Ignorar</button>
+                        <button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 0.4rem 1rem;" onclick="deleteComment(${c.id})">Borrar</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            if(reportedComments.length === 0) {
+                commentsContainer.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No hay comentarios reportados</td></tr>`;
+            }
+        }
+
+        function deleteUser(id) {
+            if(confirm('¿Seguro que deseas eliminar este usuario?')) {
+                state.users = state.users.filter(u => u.id !== id);
+                renderAdmin();
+            }
+        }
+
+        function deleteComment(id) {
+            if(confirm('¿Seguro que deseas borrar este comentario?')) {
+                state.comments = state.comments.filter(c => c.id !== id);
+                renderAdmin();
+            }
+        }
+
+        function ignoreReport(id) {
+            const comment = state.comments.find(c => c.id === id);
+            if(comment) {
+                comment.reported = false;
+                renderAdmin();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', renderAdmin);
+    </script>
+</body>
+</html>

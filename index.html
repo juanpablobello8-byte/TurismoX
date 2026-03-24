@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CostaFinder - Descubre y Califica</title>
+    <!-- Use Outfit font for a modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <div class="logo" onclick="showSection('home')">Costa<span>Finder</span></div>
+        <ul class="nav-links">
+            <li><a href="#" class="nav-item" onclick="showSection('home')">Inicio</a></li>
+            <li><a href="#" class="nav-item" onclick="showSection('catalog')">Catálogo</a></li>
+            <li><a href="#" class="nav-item" onclick="showSection('business')">Para Negocios</a></li>
+            <li><a href="#" class="nav-item" onclick="showSection('terms')">Términos</a></li>
+            <!-- Admin link removed from main site -->
+        </ul>
+        <button class="btn-primary" onclick="showSection('login')">Ingresar</button>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container">
+        
+        <!-- HOME SECTION -->
+        <section id="home" class="section active fade-in">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1 class="hero-title">Tu Guía Perfecta en la Costa</h1>
+                    <p class="hero-subtitle">Descubre los mejores hoteles frente al mar, marisquerías y clubes de playa. Planifica tus vacaciones inolvidables.</p>
+                    <button class="btn-primary btn-large" onclick="showSection('catalog')">Explorar Playas</button>
+                    <button class="btn-outline btn-large" onclick="showSection('business')">Unir mi Negocio</button>
+                </div>
+            </div>
+            
+            <h2 class="section-title text-center mb-6" style="color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Destacados de la Costa</h2>
+            <div class="grid" id="featured-grid">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- CATALOG SECTION -->
+        <section id="catalog" class="section fade-in">
+            <h2 class="section-title" style="color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Catálogo Tropical</h2>
+            <div class="filters">
+                <button class="filter-btn active" onclick="filterCatalog('all')">Todos</button>
+                <button class="filter-btn" onclick="filterCatalog('hotel')">Hoteles</button>
+                <button class="filter-btn" onclick="filterCatalog('restaurant')">Restaurantes</button>
+                <button class="filter-btn" onclick="filterCatalog('attraction')">Actividades</button>
+            </div>
+            <div class="grid" id="catalog-grid">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- DETAIL SECTION -->
+        <section id="detail" class="section fade-in">
+            <button class="btn-outline mb-4" onclick="showSection('catalog')" style="background: rgba(255,255,255,0.8);">← Volver al Catálogo</button>
+            <div class="glass p-6 detail-container" id="detail-content">
+                <!-- Injected via JS -->
+            </div>
+        </section>
+
+        <!-- LOGIN / REGISTER SECTION -->
+        <section id="login" class="section fade-in">
+            <div class="auth-container">
+                <div class="glass auth-card">
+                    <h2 class="text-center mb-4">Bienvenido a CostaFinder</h2>
+                    <div class="tabs mb-4">
+                        <button class="tab-btn active" onclick="switchAuth('login')">Iniciar Sesión</button>
+                        <button class="tab-btn" onclick="switchAuth('register')">Registrarse</button>
+                    </div>
+                    
+                    <form id="auth-form" onsubmit="handleAuth(event)">
+                        <div class="input-group" id="name-group" style="display: none;">
+                            <label>Nombre Completo</label>
+                            <input type="text" placeholder="Tu nombre">
+                        </div>
+                        <div class="input-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" placeholder="correo@ejemplo.com" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Contraseña</label>
+                            <input type="password" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn-primary w-full mt-4" id="auth-submit">Entrar</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- BUSINESS INFO SECTION -->
+        <section id="business" class="section fade-in">
+            <div class="hero glass p-8 text-center" style="max-width: 800px; margin: 0 auto;">
+                <h2 class="section-title text-center" style="margin-bottom: 20px;">Atrae más Turistas a tu Local</h2>
+                <p class="text-muted mb-6" style="font-size: 1.2rem;">Únete a nuestra plataforma costera y llega a miles de vacacionistas cada mes. El registro es gratuito para visitantes, pero cobramos una membresía para destacar tu negocio hotelero o restaurante.</p>
+                
+                <div class="pricing-card" style="background: rgba(255,255,255,0.8); border-radius: 12px; margin: 0 auto; max-width: 400px; padding: 2rem; border: 2px solid var(--primary);">
+                    <h3 class="text-primary mb-2">Cuota Trimestral</h3>
+                    <div class="price" style="font-size: 3rem; font-weight: 700; margin: 1rem 0; color: var(--accent);">Por Definir</div>
+                    <ul class="text-left mb-6" style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px; color: var(--text-main);">✓ Perfil destacado</li>
+                        <li style="margin-bottom: 10px; color: var(--text-main);">✓ Galería de fotos del local</li>
+                        <li style="margin-bottom: 10px; color: var(--text-main);">✓ Mapa GPS de ubicación</li>
+                        <li style="margin-bottom: 10px; color: var(--text-main);">✓ Respuestas a comentarios</li>
+                    </ul>
+                    <button class="btn-primary w-full">Solicitar Información</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TERMS SECTION -->
+        <section id="terms" class="section fade-in">
+            <div class="glass p-8" style="max-width: 800px; margin: 0 auto;">
+                <h2 class="mb-6">Términos y Condiciones</h2>
+                <div class="terms-content text-muted" style="line-height: 1.8;">
+                    <h3>1. Uso de la Plataforma</h3>
+                    <p>El acceso a CostaFinder es completamente gratuito para turistas. Es necesario registrarse para calificar y comentar.</p>
+                    
+                    <h3>2. Normas Comunitarias</h3>
+                    <p>Mantenemos un ambiente amigable. Nos reservamos el derecho de eliminar reseñas groseras o spam.</p>
+                    
+                    <h3>3. Sistema de Mapas</h3>
+                    <p>La plataforma utiliza mapas referenciales (Google Maps) para guiar a los usuarios al destino. Verifica tu ruta antes de viajar.</p>
+                    
+                    <h3>4. Negocios</h3>
+                    <p>Los locales pagan una cuota de membresía trimestral. CostaFinder no se responsabiliza directamente por los servicios prestados en los lugares físicos.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 CostaFinder. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Script -->
+    <script src="app.js"></script>
+</body>
+</html>
