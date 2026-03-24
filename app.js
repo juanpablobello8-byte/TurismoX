@@ -9,8 +9,8 @@ const DEFAULT_PLACES = [
         image: "Hotel Maria Del Mar/Logo.jpg", 
         desc: "El mejor destino de descanso para disfrutar de impresionantes puestas de sol, relajación y contacto con la naturaleza. Tu escape perfecto en la playa.",
         coords: "18.6420777,-95.0989037",
-        phone: "+52 123 456 7890",
-        website: "https://www.hotelmariadelmar.com",
+        phone: "2727218110 y 2721265327",
+        website: "https://www.facebook.com/HOTELMARIADELMARbreak",
         gallery: [
             "Hotel Maria Del Mar/Lobby.jpg", 
             "Hotel Maria Del Mar/Foto 1.jpg", 
@@ -37,18 +37,20 @@ function setDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
     let places = getDB('cx_places');
     if (places) {
         let hotel = places.find(p => p.id === 1);
-        if (hotel && !hotel.gallery) {
-            hotel.image = "Hotel Maria Del Mar/Logo.jpg";
-            hotel.phone = "+52 123 456 7890";
-            hotel.website = "https://www.hotelmariadelmar.com";
-            hotel.gallery = [
-                "Hotel Maria Del Mar/Lobby.jpg", 
-                "Hotel Maria Del Mar/Foto 1.jpg", 
-                "Hotel Maria Del Mar/Foto 2.jpg", 
-                "Hotel Maria Del Mar/Hab King.jpg", 
-                "Hotel Maria Del Mar/Hab Triple.jpg", 
-                "Hotel Maria Del Mar/Campestre.jpg"
-            ];
+        if (hotel) {
+            hotel.phone = "2727218110 y 2721265327";
+            hotel.website = "https://www.facebook.com/HOTELMARIADELMARbreak";
+            if (!hotel.gallery) {
+                hotel.image = "Hotel Maria Del Mar/Logo.jpg";
+                hotel.gallery = [
+                    "Hotel Maria Del Mar/Lobby.jpg", 
+                    "Hotel Maria Del Mar/Foto 1.jpg", 
+                    "Hotel Maria Del Mar/Foto 2.jpg", 
+                    "Hotel Maria Del Mar/Hab King.jpg", 
+                    "Hotel Maria Del Mar/Hab Triple.jpg", 
+                    "Hotel Maria Del Mar/Campestre.jpg"
+                ];
+            }
             setDB('cx_places', places);
         }
     }
@@ -161,7 +163,7 @@ function openDetail(id) {
     `).join('');
 
     const officialGalleryHtml = place.gallery ? place.gallery.map(img => `
-        <img src="${img}" style="width: 150px; height: 100px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+        <img src="${img}" onclick="openImageModal('${img}')" style="width: 150px; height: 100px; object-fit: cover; border-radius: 8px; margin-right: 15px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
     `).join('') : '';
 
     container.innerHTML = `
@@ -371,3 +373,25 @@ document.addEventListener('DOMContentLoaded', () => {
     updateNavbar();
     showSection('home');
 });
+
+// ====== Image Modal Logic ======
+window.openImageModal = function(src) {
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.85)';
+    modal.style.zIndex = '9999';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.cursor = 'pointer';
+    modal.innerHTML = `
+        <img src="${src}" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <button style="position: absolute; top: 20px; right: 30px; background: transparent; color: white; border: none; font-size: 2.5rem; cursor: pointer;">&times;</button>
+    `;
+    modal.onclick = () => document.body.removeChild(modal);
+    document.body.appendChild(modal);
+};
