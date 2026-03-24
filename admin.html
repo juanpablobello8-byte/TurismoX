@@ -58,7 +58,10 @@
             
             <div style="display: grid; gap: 2rem;">
                 <div class="glass-dark p-6">
-                    <h3 class="mb-4" style="color:white;">Turistas Registrados</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="color:white;">Turistas Registrados</h3>
+                        <input type="text" id="search-users" class="admin-input" placeholder="Buscar usuario..." style="width: auto; margin-bottom: 0; padding: 0.5rem;" oninput="renderAdmin()">
+                    </div>
                     <div style="overflow-x: auto;">
                         <table class="w-full">
                             <thead>
@@ -76,11 +79,15 @@
                 </div>
                 
                 <div class="glass-dark p-6">
-                    <h3 class="mb-4" style="color:white;">Comentarios Reportados</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="color:white;">Todos los Comentarios</h3>
+                        <input type="text" id="search-comments" class="admin-input" placeholder="Buscar comentario..." style="width: auto; margin-bottom: 0; padding: 0.5rem;" oninput="renderAdmin()">
+                    </div>
                     <div style="overflow-x: auto;">
                         <table class="w-full">
                             <thead>
                                 <tr>
+                                    <th style="color:#94a3b8;">Estado</th>
                                     <th style="color:#94a3b8;">Usuario</th>
                                     <th style="color:#94a3b8;">Comentario Ofensivo</th>
                                     <th style="color:#94a3b8;">Acción</th>
@@ -139,10 +146,16 @@
 
         function renderAdmin() {
             // Cargar usuarios de localStorage
-            const users = getDB('cx_users');
+            let users = getDB('cx_users');
+            const searchUsers = document.getElementById('search-users');
+            if(searchUsers) {
+                const q = searchUsers.value.toLowerCase();
+                if(q) users = users.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+            }
+
             const usersContainer = document.getElementById('admin-users');
             if(users.length === 0) {
-                usersContainer.innerHTML = '<tr><td colspan="3" class="text-muted">Aún no hay turistas registrados.</td></tr>';
+                usersContainer.innerHTML = '<tr><td colspan="3" class="text-muted">No se encontraron turistas.</td></tr>';
             } else {
                 usersContainer.innerHTML = users.map(u => `
                     <tr>
@@ -153,20 +166,28 @@
                 `).join('');
             }
 
-            // Cargar reseñas reportadas
-            const allComments = getDB('cx_comments');
-            const reportedComments = allComments.filter(c => c.reported);
+            // Cargar comentarios
+            let allComments = getDB('cx_comments');
+            const searchComments = document.getElementById('search-comments');
+            if(searchComments) {
+                const q = searchComments.value.toLowerCase();
+                if(q) allComments = allComments.filter(c => c.text.toLowerCase().includes(q) || c.user.toLowerCase().includes(q));
+            }
+
             const commentsContainer = document.getElementById('admin-comments');
             
-            if(reportedComments.length === 0) {
-                commentsContainer.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Todo tranquilo. No hay comentarios reportados.</td></tr>`;
+            if(allComments.length === 0) {
+                commentsContainer.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No hay comentarios.</td></tr>`;
             } else {
-                commentsContainer.innerHTML = reportedComments.map(c => `
-                    <tr>
+                commentsContainer.innerHTML = allComments.map(c => `
+                    <tr style="${c.reported ? 'background: rgba(239, 68, 68, 0.1);' : ''}">
+                        <td style="color: ${c.reported ? '#ef4444' : '#10b981'}; font-weight: bold;">
+                            ${c.reported ? '⚠️ Reportado' : '✅ Normal'}
+                        </td>
                         <td style="color:white;">${c.user}</td>
                         <td style="color:white;">"${c.text}"</td>
                         <td>
-                            <button class="btn-outline" style="color: #10b981; border-color: #10b981; padding: 0.4rem 1rem; margin-right: 0.5rem;" onclick="ignoreReport(${c.id})">Es seguro</button>
+                            ${c.reported ? `<button class="btn-outline" style="color: #10b981; border-color: #10b981; padding: 0.4rem 1rem; margin-right: 0.5rem;" onclick="ignoreReport(${c.id})">Es seguro</button>` : ''}
                             <button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 0.4rem 1rem;" onclick="deleteComment(${c.id})">Borrar</button>
                         </td>
                     </tr>

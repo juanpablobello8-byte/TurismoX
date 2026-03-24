@@ -6,9 +6,19 @@ const DEFAULT_PLACES = [
         type: "hotel", 
         catName: "Hotel",
         rating: 5.0, 
-        image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80", 
+        image: "Hotel Maria Del Mar/Logo.jpg", 
         desc: "El mejor destino de descanso para disfrutar de impresionantes puestas de sol, relajación y contacto con la naturaleza. Tu escape perfecto en la playa.",
-        coords: "18.6420777,-95.0989037"
+        coords: "18.6420777,-95.0989037",
+        phone: "+52 123 456 7890",
+        website: "https://www.hotelmariadelmar.com",
+        gallery: [
+            "Hotel Maria Del Mar/Lobby.jpg", 
+            "Hotel Maria Del Mar/Foto 1.jpg", 
+            "Hotel Maria Del Mar/Foto 2.jpg", 
+            "Hotel Maria Del Mar/Hab King.jpg", 
+            "Hotel Maria Del Mar/Hab Triple.jpg", 
+            "Hotel Maria Del Mar/Campestre.jpg"
+        ]
     }
 ];
 
@@ -16,6 +26,7 @@ const DEFAULT_PLACES = [
 if (!localStorage.getItem('cx_places')) localStorage.setItem('cx_places', JSON.stringify(DEFAULT_PLACES));
 if (!localStorage.getItem('cx_users')) localStorage.setItem('cx_users', JSON.stringify([]));
 if (!localStorage.getItem('cx_comments')) localStorage.setItem('cx_comments', JSON.stringify([]));
+if (!localStorage.getItem('cx_user_photos')) localStorage.setItem('cx_user_photos', JSON.stringify([]));
 if (!localStorage.getItem('cx_current_user')) localStorage.setItem('cx_current_user', JSON.stringify(null));
 
 function getDB(key) { return JSON.parse(localStorage.getItem(key)); }
@@ -118,6 +129,19 @@ function openDetail(id) {
 
     const mapsEmbedUrl = `https://maps.google.com/maps?q=${place.coords}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
 
+    // user photos
+    const allUserPhotos = getDB('cx_user_photos') || [];
+    const userPhotosHtml = allUserPhotos.filter(p => p.placeId === id).map(p => `
+        <div style="display:inline-block; margin: 10px; width: 120px; text-align:center;">
+            <img src="${p.photoUrl}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;">
+            <small style="color:var(--text-muted); display:block; margin-top:5px;">Por: ${p.user}</small>
+        </div>
+    `).join('');
+
+    const officialGalleryHtml = place.gallery ? place.gallery.map(img => `
+        <img src="${img}" style="width: 150px; height: 100px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+    `).join('') : '';
+
     container.innerHTML = `
         <div class="detail-header">
             <img src="${place.image}" alt="${place.name}" class="detail-img">
@@ -129,10 +153,29 @@ function openDetail(id) {
                 </div>
                 <p class="text-muted mb-6" style="font-size: 1.1rem; line-height: 1.8;">${place.desc}</p>
                 
+                ${place.phone || place.website || officialGalleryHtml ? `
+                <div class="glass p-6 mb-6" style="background: rgba(var(--primary-rgb), 0.1); border: 1px solid var(--primary); border-radius: 12px;">
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Contacto Oficial</h3>
+                    ${place.phone ? `<p style="color: var(--text-main); margin-bottom: 0.5rem;">📞 ${place.phone}</p>` : ''}
+                    ${place.website ? `<p style="color: var(--text-main); margin-bottom: 1rem;">🌐 <a href="${place.website}" target="_blank" style="color: var(--accent); text-decoration: none;">Visitar Sitio Web</a></p>` : ''}
+                    ${officialGalleryHtml ? `
+                    <h4 style="color: var(--text-main); margin-top: 1rem; margin-bottom: 0.5rem;">Catálogo Oficial</h4>
+                    <div style="display: flex; overflow-x: auto; padding-bottom: 10px;">
+                        ${officialGalleryHtml}
+                    </div>` : ''}
+                </div>
+                ` : ''}
+                
                 <div class="glass p-6" style="background: rgba(255,255,255,0.7); border: 1px solid var(--primary);">
                     <h3 style="color: var(--primary);">Comparte tu experiencia</h3>
                     <textarea id="new-comment-text" class="w-full" rows="3" placeholder="Escribe aquí tu reseña sobre ${place.name}..." style="background: white; border: 1px solid rgba(0,0,0,0.1); color: var(--text-main); padding: 10px; border-radius: 8px; margin-top: 10px; margin-bottom: 1rem; font-family:inherit;"></textarea>
-                    <button class="btn-primary" onclick="postComment()">Publicar Reseña</button>
+                    <button class="btn-primary" onclick="postComment()" style="margin-bottom: 1rem;">Publicar Reseña</button>
+                    
+                    <hr style="border:0; border-top:1px solid rgba(0,0,0,0.1); margin: 1rem 0;">
+                    
+                    <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Añadir Foto del Lugar</h4>
+                    <input type="file" id="user-photo-upload" accept="image/*" style="margin-bottom: 10px; width:100%;">
+                    <button class="btn-outline" onclick="uploadUserPhoto()">Subir Foto</button>
                 </div>
             </div>
         </div>
@@ -142,7 +185,14 @@ function openDetail(id) {
             <iframe width="100%" height="400" src="${mapsEmbedUrl}" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
         </div>
 
-        <div class="comments-list">
+        <div class="user-photos-list" style="margin-top: 2rem;">
+            <h3 class="mb-4" style="color: var(--primary);">Fotos de usuarios</h3>
+            <div>
+            ${userPhotosHtml || '<p class="text-muted">Aún no hay fotos de usuarios. ¡Sé el primero en subir una!</p>'}
+            </div>
+        </div>
+
+        <div class="comments-list" style="margin-top: 2rem;">
             <h3 class="mb-4" style="color: var(--primary);">Todas las Reseñas</h3>
             ${commentsHTML || '<p class="text-muted">No hay reseñas para mostrar todavía. ¡Sé el primero!</p>'}
         </div>
@@ -181,6 +231,36 @@ function postComment() {
     
     // Refresh detail view
     openDetail(state.currentPlaceId);
+}
+
+function uploadUserPhoto() {
+    const currentUser = getDB('cx_current_user');
+    if(!currentUser) {
+        alert('🏄‍♂️ Por favor, Inicia Sesión en el panel superior antes de subir fotos.');
+        showSection('login');
+        return;
+    }
+
+    const fileInput = document.getElementById('user-photo-upload');
+    if(!fileInput.files || fileInput.files.length === 0) {
+        alert('Por favor, selecciona una foto primero.');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const photos = getDB('cx_user_photos') || [];
+        photos.push({
+            id: Date.now(),
+            placeId: state.currentPlaceId,
+            user: currentUser.name,
+            photoUrl: e.target.result
+        });
+        setDB('cx_user_photos', photos);
+        openDetail(state.currentPlaceId);
+    };
+    reader.readAsDataURL(file);
 }
 
 function reportComment(commentId) {
