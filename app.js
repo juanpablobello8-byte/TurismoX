@@ -26,17 +26,17 @@ const DEFAULT_PLACES = [
         type: "attraction", 
         catName: "Zona Turística",
         rating: 5.0, 
-        image: "playa de montepio/Playa 4.jpg", 
+        image: "Playa de Montepio/Playa 4.jpg", 
         desc: "Un paraíso natural perfecto para disfrutar del oleaje, la arena dorada y diversas actividades recreativas. El entorno ideal para relajarte o aventurarte.",
         coords: "18.6445842,-95.0974643",
         phone: "",
         website: "",
         gallery: [
-            "playa de montepio/Playa 1.jpg", 
-            "playa de montepio/Playa 2.jpg", 
-            "playa de montepio/Playa 3.jpg", 
-            "playa de montepio/Playa 4.jpg", 
-            "playa de montepio/Playa 5.jpg"
+            "Playa de Montepio/Playa 1.jpg", 
+            "Playa de Montepio/Playa 2.jpg", 
+            "Playa de Montepio/Playa 3.jpg", 
+            "Playa de Montepio/Playa 4.jpg", 
+            "Playa de Montepio/Playa 5.jpg"
         ]
     }
 ];
@@ -77,6 +77,17 @@ function setDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
             places.push(DEFAULT_PLACES[1]);
         } else {
             montepio.coords = "18.6445842,-95.0974643";
+            // Check if it has old casing and override
+            if (montepio.image.includes('playa de montepio')) {
+                montepio.image = "Playa de Montepio/Playa 4.jpg";
+                montepio.gallery = [
+                    "Playa de Montepio/Playa 1.jpg", 
+                    "Playa de Montepio/Playa 2.jpg", 
+                    "Playa de Montepio/Playa 3.jpg", 
+                    "Playa de Montepio/Playa 4.jpg", 
+                    "Playa de Montepio/Playa 5.jpg"
+                ];
+            }
         }
         setDB('cx_places', places);
     }
