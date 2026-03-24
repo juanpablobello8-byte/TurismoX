@@ -19,6 +19,25 @@ const DEFAULT_PLACES = [
             "Hotel Maria Del Mar/Hab Triple.jpg", 
             "Hotel Maria Del Mar/Campestre.jpg"
         ]
+    },
+    { 
+        id: 2, 
+        name: "Playa de Montepío", 
+        type: "attraction", 
+        catName: "Zona Turística",
+        rating: 5.0, 
+        image: "playa de montepio/Playa 4.jpg", 
+        desc: "Un paraíso natural perfecto para disfrutar del oleaje, la arena dorada y diversas actividades recreativas. El entorno ideal para relajarte o aventurarte.",
+        coords: "18.6366,-95.0975",
+        phone: "",
+        website: "",
+        gallery: [
+            "playa de montepio/Playa 1.jpg", 
+            "playa de montepio/Playa 2.jpg", 
+            "playa de montepio/Playa 3.jpg", 
+            "playa de montepio/Playa 4.jpg", 
+            "playa de montepio/Playa 5.jpg"
+        ]
     }
 ];
 
@@ -51,8 +70,13 @@ function setDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
                     "Hotel Maria Del Mar/Campestre.jpg"
                 ];
             }
-            setDB('cx_places', places);
         }
+        
+        let montepio = places.find(p => p.id === 2);
+        if (!montepio) {
+            places.push(DEFAULT_PLACES[1]);
+        }
+        setDB('cx_places', places);
     }
 })();
 
@@ -350,7 +374,7 @@ function handleAuth(event) {
         // Register flow
         const name = event.target.querySelector('input[type="text"]').value.trim();
         if(users.some(u => u.email === email)) {
-            alert('Ese correo ya está registrado en CostaFinder.');
+            alert('Ese correo ya está registrado en CoastGuide.');
             return;
         }
         

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CostaFinder - Descubre y Califica</title>
+    <title>CoastGuide - Descubre y Califica</title>
     <!-- Use Outfit font for a modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -11,14 +11,13 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar glass">
-        <div class="logo" onclick="showSection('home')">Costa<span>Finder</span></div>
+        <div class="logo" onclick="showSection('home')">Coast<span>Guide</span></div>
         <ul class="nav-links">
             <li><a href="#" class="nav-item" onclick="showSection('home')">Inicio</a></li>
             <li><a href="#" class="nav-item" onclick="showSection('catalog')">Catálogo</a></li>
+            <li><a href="#" class="nav-item" onclick="showSection('news')">Noticias</a></li>
             <li><a href="#" class="nav-item" onclick="showSection('business')">Para Negocios</a></li>
             <li><a href="#" class="nav-item" onclick="showSection('terms')">Términos</a></li>
-            <!-- Admin link removed from main site -->
-        </ul>
         <button class="btn-primary" onclick="showSection('login')">Ingresar</button>
     </nav>
 
@@ -123,7 +122,7 @@
                 <h2 class="mb-6">Términos y Condiciones</h2>
                 <div class="terms-content text-muted" style="line-height: 1.8;">
                     <h3>1. Uso de la Plataforma</h3>
-                    <p>El acceso a CostaFinder es completamente gratuito para turistas. Es necesario registrarse para calificar y comentar.</p>
+                    <p>El acceso a CoastGuide es completamente gratuito para turistas. Es necesario registrarse para calificar y comentar.</p>
                     
                     <h3>2. Normas Comunitarias</h3>
                     <p>Mantenemos un ambiente amigable. Nos reservamos el derecho de eliminar reseñas groseras o spam.</p>
@@ -132,7 +131,35 @@
                     <p>La plataforma utiliza mapas referenciales (Google Maps) para guiar a los usuarios al destino. Verifica tu ruta antes de viajar.</p>
                     
                     <h3>4. Negocios</h3>
-                    <p>Los locales pagan una cuota de membresía trimestral. CostaFinder no se responsabiliza directamente por los servicios prestados en los lugares físicos.</p>
+                    <p>Los locales pagan una cuota de membresía trimestral. CoastGuide no se responsabiliza directamente por los servicios prestados en los lugares físicos.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEWS SECTION -->
+        <section id="news" class="section fade-in">
+            <div class="glass p-8" style="max-width: 900px; margin: 0 auto;">
+                <h2 class="section-title text-center mb-6" style="color: var(--primary);">Noticias y Acontecimientos</h2>
+                <div class="grid" style="grid-template-columns: 1fr;">
+                    
+                    <div class="glass card" style="display: flex; flex-direction: row; align-items: center; padding: 1.5rem; margin-bottom: 1.5rem; gap: 1.5rem;">
+                        <img src="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=300&q=80" alt="Playa del Tular" style="width: 200px; height: 150px; object-fit: cover; border-radius: 12px;">
+                        <div>
+                            <h3 class="mb-2" style="color: var(--primary);">Próximo Festival Gastronómico en la Costa</h3>
+                            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 0.5rem;">📅 12 de Abril, 2026</p>
+                            <p class="text-muted" style="line-height: 1.6;">Los mejores chefs de mariscos de la región se reunirán este fin de semana para ofrecer platillos exóticos al público abierto. Se preveé una asistencia récord.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass card" style="display: flex; flex-direction: row; align-items: center; padding: 1.5rem; margin-bottom: 1.5rem; gap: 1.5rem;">
+                        <img src="playa de montepio/Playa 4.jpg" alt="Apertura Montepio" style="width: 200px; height: 150px; object-fit: cover; border-radius: 12px;">
+                        <div>
+                            <h3 class="mb-2" style="color: var(--primary);">Reapertura de Zonas en Playa de Montepío</h3>
+                            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 0.5rem;">📅 22 de Marzo, 2026</p>
+                            <p class="text-muted" style="line-height: 1.6;">Las autoridades locales han finalizado la rehabilitación de la zona sur de la playa. Turistas reportan un entorno fenomenal y muy limpio. El acceso vuelve a ser libre.</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -141,7 +168,7 @@
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2026 CostaFinder. Todos los derechos reservados.</p>
+        <p>&copy; 2026 CoastGuide. Todos los derechos reservados.</p>
     </footer>
 
     <!-- Script -->
