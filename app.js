@@ -90,6 +90,16 @@ function getStarsHTML(rating) {
     return html;
 }
 
+function getCalculatedRating(placeId) {
+    const comments = getDB('cx_comments').filter(c => c.placeId === placeId && c.rating);
+    if (comments.length === 0) {
+        const place = getDB('cx_places').find(p => p.id === placeId);
+        return place ? place.rating : 5.0; 
+    }
+    const sum = comments.reduce((acc, c) => acc + c.rating, 0);
+    return (sum / comments.length).toFixed(1);
+}
+
 function renderCards(containerId, data) {
     const container = document.getElementById(containerId);
     if(!container) return;
@@ -101,6 +111,7 @@ function renderCards(containerId, data) {
     }
 
     data.forEach(item => {
+        const currentRating = getCalculatedRating(item.id);
         const div = document.createElement('div');
         div.className = 'glass card';
         div.innerHTML = `
@@ -109,8 +120,8 @@ function renderCards(containerId, data) {
             <div class="card-content">
                 <h3 class="mb-2" style="color: var(--primary);">${item.name}</h3>
                 <div class="rating">
-                    ${getStarsHTML(item.rating)}
-                    <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 5px;">${item.rating}</span>
+                    ${getStarsHTML(currentRating)}
+                    <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 5px;">${currentRating}</span>
                 </div>
                 <p class="text-muted" style="font-size: 0.95rem; margin-bottom: 1rem;">${item.desc.substring(0, 75)}...</p>
                 <button class="btn-primary w-full" onclick="openDetail(${item.id})">Explorar</button>
@@ -144,13 +155,17 @@ function openDetail(id) {
     const commentsHTML = placeComments.map(c => `
         <div class="comment-item">
             <div style="display:flex; justify-content:space-between;">
-                <strong class="text-accent">🌴 ${c.user}</strong>
+                <div>
+                    <strong class="text-accent">🌴 ${c.user}</strong>
+                    ${c.rating ? `<span style="margin-left:10px; font-size:0.9rem;">${getStarsHTML(c.rating)}</span>` : ''}
+                </div>
                 <button onclick="reportComment(${c.id})" title="Reportar comentario como ofensivo" style="background:transparent; border:none; color:#ef4444; font-size:0.8rem; cursor:pointer;">⚠️ Reportar</button>
             </div>
             <p class="mt-4" style="color: var(--text-muted);">${c.text}</p>
         </div>
     `).join('');
 
+    const currentRating = getCalculatedRating(id);
     const mapsEmbedUrl = `https://maps.google.com/maps?q=${place.coords}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
 
     // user photos
@@ -173,7 +188,7 @@ function openDetail(id) {
                 <div class="tag" style="position:relative; display:inline-block; top:0; right:0; margin-bottom:1rem;">${place.catName}</div>
                 <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--primary);">${place.name}</h2>
                 <div class="rating mb-4" style="font-size: 1.5rem;">
-                    ${getStarsHTML(place.rating)} <span style="color: var(--text-muted); font-size:1.2rem;">${place.rating} / 5</span>
+                    ${getStarsHTML(currentRating)} <span style="color: var(--text-muted); font-size:1.2rem;">${currentRating} / 5</span>
                 </div>
                 <p class="text-muted mb-6" style="font-size: 1.1rem; line-height: 1.8;">${place.desc}</p>
                 
@@ -192,6 +207,16 @@ function openDetail(id) {
                 
                 <div class="glass p-6" style="background: rgba(255,255,255,0.7); border: 1px solid var(--primary);">
                     <h3 style="color: var(--primary);">Comparte tu experiencia</h3>
+                    <div style="margin-bottom: 0.5rem;">
+                        <label style="color:var(--text-main); font-weight:600; margin-right: 0.5rem;">Calificación:</label>
+                        <select id="new-comment-rating" style="padding: 5px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); font-family: inherit;">
+                            <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                            <option value="4">⭐⭐⭐⭐ Muy Bueno</option>
+                            <option value="3">⭐⭐⭐ Bueno</option>
+                            <option value="2">⭐⭐ Regular</option>
+                            <option value="1">⭐ Malo</option>
+                        </select>
+                    </div>
                     <textarea id="new-comment-text" class="w-full" rows="3" placeholder="Escribe aquí tu reseña sobre ${place.name}..." style="background: white; border: 1px solid rgba(0,0,0,0.1); color: var(--text-main); padding: 10px; border-radius: 8px; margin-top: 10px; margin-bottom: 1rem; font-family:inherit;"></textarea>
                     <button class="btn-primary" onclick="postComment()" style="margin-bottom: 1rem;">Publicar Reseña</button>
                     
@@ -241,12 +266,16 @@ function postComment() {
         return;
     }
 
+    const ratingInput = document.getElementById('new-comment-rating');
+    const commentRating = ratingInput ? parseInt(ratingInput.value) : 5;
+
     const comments = getDB('cx_comments');
     const newComment = {
         id: Date.now(), // Generate unique ID
         placeId: state.currentPlaceId,
         user: currentUser.name,
         text: text,
+        rating: commentRating,
         reported: false
     };
 
